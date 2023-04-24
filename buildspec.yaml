@@ -4,17 +4,24 @@ phases:
   pre_build:
     commands:
       - echo Nothing to do in the pre_build phase...
+      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n2z6j5q8
             
   build:
     commands:
       - echo Build started on `date`
       - mvn clean install
+      - docker build -t sonaliregi123 .
+      - docker tag sonaliregi123:latest public.ecr.aws/n2z6j5q8/sonaliregi123:latest
                  
   post_build:
     commands:
       - echo Build completed on `date`
-     
+      - docker push public.ecr.aws/n2z6j5q8/sonaliregi123:latest
+      - printf '[{"name":"mycontainer","imageUri":"public.ecr.aws/n2z6j5q8/sonaliregi123:latest"}]' > imagedefinition.json
+      
 artifacts:
   files:
     - 'target/*.war'
+    - imagedefinition.json
+    
   discard-paths: yes
